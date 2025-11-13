@@ -18,52 +18,255 @@ init_db(app)
 
 print("✅ Simple backend server starting (no ML models - using mock data)...")
 
+# Image content analysis patterns
+IMAGE_PATTERNS = {
+    'sunset': {
+        'keywords': ['sunset', 'evening', 'dusk', 'golden hour', 'sky', 'orange', 'red', 'horizon'],
+        'captions': {
+            'instagram': [
+                "🌅 Chasing sunsets and dreams ✨ Every ending brings a new beginning",
+                "🧡 Golden hour magic captured in a moment 📸 Nature's masterpiece",
+                "☀️ Watching the sun paint the sky 🎨 These are the moments I live for"
+            ],
+            'facebook': [
+                "Another beautiful sunset to remind us of life's simple pleasures 🌅 What's the most beautiful sunset you've ever seen?",
+                "Taking a moment to appreciate nature's daily show 🌄 Grateful for these peaceful moments!",
+                "The sky put on quite a show tonight! 🌇 Nothing beats ending the day with a view like this"
+            ],
+            'linkedin': [
+                "Reflection moment: Just as the sun sets to rise again, every ending in business creates new opportunities 🌅 #NewBeginnings",
+                "Finding inspiration in nature's daily transformation 🌄 Sometimes the best ideas come during moments of pause",
+                "Ending the day with gratitude for the journey 🌇 Tomorrow brings new opportunities for growth"
+            ]
+        },
+        'hashtags': {
+            'instagram': [
+                ['#sunset', '#sunsetlovers', '#goldenhour', '#naturephotography', '#skyporn'],
+                ['#sunsetvibes', '#eveningsky', '#sunsetphotography', '#beautifulsky', '#naturelover'],
+                ['#sunsetoftheday', '#skylovers', '#dusk', '#eveningglow', '#sunsetmagic']
+            ],
+            'facebook': [
+                ['#Sunset', '#NatureLovers', '#EveningVibes', '#BeautifulSky', '#Grateful'],
+                ['#SunsetView', '#NaturesBeauty', '#PeacefulMoments', '#SkyColors', '#Blessed'],
+                ['#GoldenHour', '#NaturePhotography', '#SunsetChaser', '#SkyWatcher', '#Thankful']
+            ],
+            'linkedin': [
+                ['#Reflection', '#NewBeginnings', '#GrowthMindset', '#Leadership', '#Inspiration'],
+                ['#MindfulMoment', '#WorkLifeBalance', '#Perspective', '#Success', '#Motivation'],
+                ['#ProfessionalGrowth', '#Gratitude', '#LeadershipLessons', '#CareerDevelopment', '#Wisdom']
+            ]
+        }
+    },
+    'nature': {
+        'keywords': ['nature', 'trees', 'forest', 'mountains', 'landscape', 'outdoor', 'green', 'scenic'],
+        'captions': {
+            'instagram': [
+                "🌲 Lost in nature, found in peace 🍃 Where the wild things are",
+                "🏔️ Nature therapy at its finest 💚 Breathing in the beauty",
+                "🌿 Into the wild we go 🌄 Nature never goes out of style"
+            ],
+            'facebook': [
+                "Sometimes you just need to disconnect and reconnect with nature 🌲 What's your favorite outdoor spot?",
+                "Nature has a way of healing the soul 🌿 Grateful for this beautiful planet we call home!",
+                "Adventures in the great outdoors! 🏔️ Nothing beats fresh air and stunning views"
+            ],
+            'linkedin': [
+                "Taking time to recharge in nature improves productivity and creativity 🌲 #WorkLifeBalance",
+                "Lessons from nature: Adapt, grow, and stay rooted in your values 🌿 #LeadershipLessons",
+                "Strategic thinking happens best outdoors 🏔️ Where do you find your best ideas?"
+            ]
+        },
+        'hashtags': {
+            'instagram': [
+                ['#nature', '#naturelover', '#outdoors', '#naturephotography', '#wilderness'],
+                ['#naturelovers', '#getoutside', '#exploremore', '#adventuretime', '#naturegram'],
+                ['#intonature', '#outdoorlife', '#scenic', '#landscapephotography', '#earthpix']
+            ],
+            'facebook': [
+                ['#Nature', '#OutdoorLife', '#NatureLovers', '#FreshAir', '#PeacefulPlace'],
+                ['#NatureTherapy', '#Outdoors', '#BeautifulNature', '#Explore', '#Adventure'],
+                ['#NaturePhotography', '#Scenic', '#Wilderness', '#GetOutside', '#NaturalBeauty']
+            ],
+            'linkedin': [
+                ['#WorkLifeBalance', '#Mindfulness', '#Productivity', '#WellBeing', '#Leadership'],
+                ['#SelfCare', '#MentalHealth', '#Success', '#ProfessionalDevelopment', '#Motivation'],
+                ['#StrategicThinking', '#Creativity', '#Innovation', '#GrowthMindset', '#Performance']
+            ]
+        }
+    },
+    'people': {
+        'keywords': ['people', 'person', 'face', 'portrait', 'selfie', 'group', 'friends', 'family'],
+        'captions': {
+            'instagram': [
+                "💫 Living my best life with the best people ✨ Creating memories that last forever",
+                "😊 Surrounded by love and good vibes 💕 These are the moments that matter",
+                "🌟 Squad goals achieved 🎉 Making every moment count with amazing people"
+            ],
+            'facebook': [
+                "Blessed to have these incredible people in my life! 💕 Who's your favorite person to spend time with?",
+                "Making memories with the ones who matter most 😊 Feeling grateful for good company and great times!",
+                "Life is better with friends like these! 🌟 Cheers to more adventures together"
+            ],
+            'linkedin': [
+                "Great teams drive great results 💼 Collaboration and connection are key to success",
+                "Networking and building meaningful professional relationships 🤝 Together we achieve more",
+                "The power of teamwork and shared vision 🎯 Surrounding yourself with excellence breeds excellence"
+            ]
+        },
+        'hashtags': {
+            'instagram': [
+                ['#friends', '#friendship', '#goodvibes', '#memories', '#blessed'],
+                ['#squadgoals', '#besties', '#friendshipgoals', '#together', '#happy'],
+                ['#friendship', '#lovemypeople', '#grateful', '#positivevibes', '#goodtimes']
+            ],
+            'facebook': [
+                ['#Friends', '#Blessed', '#GoodTimes', '#Memories', '#Grateful'],
+                ['#Friendship', '#Community', '#Together', '#FamilyAndFriends', '#LifeIsGood'],
+                ['#BlessedLife', '#GoodCompany', '#Thankful', '#FriendshipGoals', '#HappyMoments']
+            ],
+            'linkedin': [
+                ['#Teamwork', '#Collaboration', '#Networking', '#ProfessionalGrowth', '#Success'],
+                ['#Leadership', '#TeamBuilding', '#Partnership', '#BusinessSuccess', '#Together'],
+                ['#ProfessionalNetwork', '#Synergy', '#TeamSuccess', '#CollaborativeLeadership', '#Excellence']
+            ]
+        }
+    },
+    'food': {
+        'keywords': ['food', 'meal', 'dinner', 'lunch', 'breakfast', 'cooking', 'restaurant', 'delicious'],
+        'captions': {
+            'instagram': [
+                "🍽️ Food is my love language 😋 Living for these delicious moments",
+                "👨‍🍳 Made with love, eaten with joy 🥘 Food that feeds the soul",
+                "🤤 Foodie life is the best life 🍴 Every meal is an experience"
+            ],
+            'facebook': [
+                "Treating myself to something delicious today! 😋 What's your favorite comfort food?",
+                "Good food = Good mood! 🍽️ Sharing this amazing meal and grateful for every bite",
+                "Foodie adventures continue! 👨‍🍳 There's nothing like a great meal to bring people together"
+            ],
+            'linkedin': [
+                "Business meetings over good food build stronger partnerships 🍽️ #Networking",
+                "Work-life balance includes enjoying great meals ☕ Take time to savor the moments",
+                "Food brings people together - lessons in hospitality and client relations 🤝 #BusinessEtiquette"
+            ]
+        },
+        'hashtags': {
+            'instagram': [
+                ['#foodie', '#foodporn', '#delicious', '#foodstagram', '#yummy'],
+                ['#foodlover', '#instafood', '#foodphotography', '#foodgasm', '#tasty'],
+                ['#foodblogger', '#foodiesofinstagram', '#foodheaven', '#eatgood', '#foodlove']
+            ],
+            'facebook': [
+                ['#Foodie', '#Delicious', '#FoodLover', '#GoodFood', '#Yummy'],
+                ['#FoodTime', '#TastyFood', '#FoodPorn', '#EatingGood', '#FoodLife'],
+                ['#FoodPhotography', '#ComfortFood', '#FoodHeaven', '#EatWell', '#FoodAdventures']
+            ],
+            'linkedin': [
+                ['#BusinessLunch', '#Networking', '#ClientMeeting', '#WorkLifeBalance', '#Hospitality'],
+                ['#BusinessDinner', '#ProfessionalNetworking', '#ClientRelations', '#Partnership', '#Success'],
+                ['#CorporateCulture', '#TeamBuilding', '#BusinessEtiquette', '#Collaboration', '#Leadership']
+            ]
+        }
+    },
+    'default': {
+        'keywords': [],
+        'captions': {
+            'instagram': [
+                "✨ Living in the moment and loving every second 💫 What makes you smile today?",
+                "📸 Captured a piece of today's magic ✨ Life is beautiful in unexpected ways",
+                "🌟 Creating my own sunshine ☀️ Grateful for this journey"
+            ],
+            'facebook': [
+                "Sharing a moment from today! 😊 What's been the best part of your day?",
+                "Taking time to appreciate the little things 💕 Life is full of beautiful moments",
+                "Having a great day! 🌟 Hope everyone else is having an amazing day too!"
+            ],
+            'linkedin': [
+                "Professional insight: Every experience is an opportunity for growth 📈 #CareerDevelopment",
+                "Reflecting on today's achievements and tomorrow's possibilities 🎯 #ProfessionalGrowth",
+                "Finding inspiration in everyday moments 💡 What drives your professional passion?"
+            ]
+        },
+        'hashtags': {
+            'instagram': [
+                ['#lifestyle', '#inspiration', '#dailyvibes', '#motivation', '#positivevibes'],
+                ['#photooftheday', '#blessed', '#instagood', '#instadaily', '#picoftheday'],
+                ['#happiness', '#grateful', '#goodvibes', '#mindfulness', '#selfcare']
+            ],
+            'facebook': [
+                ['#Blessed', '#Grateful', '#PositiveVibes', '#Community', '#FamilyFirst'],
+                ['#Inspiration', '#DailyMotivation', '#GoodVibes', '#Thankful', '#ShareTheLove'],
+                ['#Mindfulness', '#Gratitude', '#LifeLessons', '#Positivity', '#TodaysThoughts']
+            ],
+            'linkedin': [
+                ['#WorkLifeBalance', '#Leadership', '#ProfessionalGrowth', '#CareerDevelopment', '#Success'],
+                ['#BusinessInsights', '#Learning', '#Innovation', '#Entrepreneurship', '#GrowthMindset'],
+                ['#LeadershipDevelopment', '#Impact', '#ProfessionalLife', '#CareerGoals', '#Motivation']
+            ]
+        }
+    }
+}
+
+def analyze_image_content(image_data, text):
+    """Analyze image content based on text keywords and return context"""
+    if not image_data:
+        return {'type': 'default'}
+    
+    # Combine text for analysis
+    combined_text = text.lower()
+    
+    # Check for image content patterns
+    detected_patterns = []
+    for pattern_name, pattern_data in IMAGE_PATTERNS.items():
+        if pattern_name == 'default':
+            continue
+        # Check if any keywords match
+        for keyword in pattern_data['keywords']:
+            if keyword in combined_text:
+                detected_patterns.append(pattern_name)
+                break
+    
+    # Return the first detected pattern or default
+    if detected_patterns:
+        return {'type': detected_patterns[0]}
+    return {'type': 'default'}
+
+def generate_contextual_captions(text, image_context):
+    """Generate captions based on image context"""
+    context_type = image_context.get('type', 'default')
+    pattern = IMAGE_PATTERNS.get(context_type, IMAGE_PATTERNS['default'])
+    
+    return pattern['captions']
+
+def generate_contextual_hashtags(image_context):
+    """Generate hashtags based on image context"""
+    context_type = image_context.get('type', 'default')
+    pattern = IMAGE_PATTERNS.get(context_type, IMAGE_PATTERNS['default'])
+    
+    return pattern['hashtags']
+
 @app.route('/api/analyze', methods=['POST'])
 def analyze_content():
-    """Mock analysis endpoint - returns sample data"""
+    """Intelligent analysis endpoint - analyzes image content and generates relevant captions"""
     try:
         data = request.json
         text = data.get('text', '')
-        has_image = bool(data.get('image', ''))
+        image_data = data.get('image', '')
+        has_image = bool(image_data)
+        
+        # Analyze image content using keywords detection
+        image_context = analyze_image_content(image_data, text) if has_image else {}
+        
+        # Generate context-aware captions based on image analysis
+        captions = generate_contextual_captions(text, image_context)
+        hashtags = generate_contextual_hashtags(image_context)
         
         # Generate mock response
         response = {
             'decision': 'approved' if random.random() > 0.2 else 'rejected',
             'confidence': round(random.uniform(0.75, 0.95), 2),
-            'captions': {
-                'instagram': [
-                    f"✨ {text[:50]}... Living my best life! 💫",
-                    f"📸 {text[:50]}... What inspires you today? ✨",
-                    f"🌟 {text[:50]}... Capturing the magic! 💜"
-                ],
-                'facebook': [
-                    f"Hey friends! 👋 {text[:100]}... What's been the highlight of your week?",
-                    f"Feeling blessed! 🌟 {text[:100]}... Hope everyone is having a wonderful day!",
-                    f"Taking a moment to appreciate life. {text[:100]}... What are you grateful for?"
-                ],
-                'linkedin': [
-                    f"Professional insight: {text[:80]}... What strategies help you maintain balance?",
-                    f"Reflecting on growth: {text[:80]}... What has been your biggest insight recently?",
-                    f"Leadership thought: {text[:80]}... What drives your professional passion?"
-                ]
-            },
-            'hashtags': {
-                'instagram': [
-                    ['#lifestyle', '#inspiration', '#dailyvibes', '#motivation', '#positivevibes'],
-                    ['#photooftheday', '#blessed', '#instagood', '#instadaily', '#picoftheday'],
-                    ['#happiness', '#grateful', '#goodvibes', '#mindfulness', '#selfcare']
-                ],
-                'facebook': [
-                    ['#Blessed', '#Grateful', '#PositiveVibes', '#Community', '#FamilyFirst'],
-                    ['#Inspiration', '#DailyMotivation', '#GoodVibes', '#Thankful', '#ShareTheLove'],
-                    ['#Mindfulness', '#Gratitude', '#LifeLessons', '#Positivity', '#TodaysThoughts']
-                ],
-                'linkedin': [
-                    ['#WorkLifeBalance', '#Leadership', '#ProfessionalGrowth', '#CareerDevelopment', '#Success'],
-                    ['#BusinessInsights', '#Learning', '#Innovation', '#Entrepreneurship', '#GrowthMindset'],
-                    ['#LeadershipDevelopment', '#Impact', '#ProfessionalLife', '#CareerGoals', '#Motivation']
-                ]
-            },
+            'captions': captions,
+            'hashtags': hashtags,
             'insights': {
                 'engagement_score': random.randint(75, 95),
                 'sentiment': 'POSITIVE',

@@ -256,6 +256,12 @@
   gap: 1.5rem;
 }
 
+.insights-grid-two {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
 .insight-card {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
   padding: 2rem;
@@ -269,7 +275,21 @@
   overflow: hidden;
 }
 
-.insight-card::before {
+.insight-card-large {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+  padding: 2.5rem;
+  border-radius: 24px;
+  border: 2px solid rgba(99, 102, 241, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.insight-card::before,
+.insight-card-large::before {
   content: '';
   position: absolute;
   top: 0;
@@ -279,7 +299,8 @@
   background: var(--gradient-2);
 }
 
-.insight-card:hover {
+.insight-card:hover,
+.insight-card-large:hover {
   transform: translateY(-6px);
   box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
   border-color: rgba(99, 102, 241, 0.6);
@@ -301,6 +322,43 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 1.2;
+}
+
+/* Schedule Table */
+.schedule-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.schedule-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 1.5rem;
+  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 3px solid var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.schedule-row:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-left-color: var(--accent-cyan);
+  transform: translateX(4px);
+}
+
+.schedule-day {
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-size: 0.95rem;
+}
+
+.schedule-time {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 /* Captions Section */

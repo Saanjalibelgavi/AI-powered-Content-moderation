@@ -17,12 +17,15 @@ const ResultsPage = () => {
   useEffect(() => {
     // Get analysis results from session storage
     const data = sessionStorage.getItem('analysisResults');
+    console.log('Session data:', data);
     if (!data) {
+      console.log('No data found, navigating to input');
       navigate('/input');
       return;
     }
 
     const analysisResults = JSON.parse(data);
+    console.log('Analysis results:', analysisResults);
     
     // Set input data for display
     setInputData({
@@ -39,17 +42,12 @@ const ResultsPage = () => {
           ? "Content analyzed by AI models (Transformers + OpenCV) - Safe for posting"
           : "Content contains potentially sensitive material detected by ML models"
       },
-      captions: analysisResults.captions,
-      hashtags: analysisResults.hashtags,
+      captions: analysisResults.captions || [],
+      hashtags: analysisResults.hashtags || [],
+      bestTimeSchedule: analysisResults.best_time_schedule,
+      platform: analysisResults.platform || 'instagram',
       insights: {
-        sentiment: analysisResults.insights.sentiment,
-        engagementScore: analysisResults.insights.engagement_score,
-        toxicityLevel: analysisResults.insights.toxicity_level,
-        readability: analysisResults.insights.readability,
-        visualAppeal: analysisResults.insights.visual_appeal,
-        authenticity: analysisResults.insights.authenticity,
-        bestTimeToPost: analysisResults.insights.best_time_to_post,
-        engagementPrediction: analysisResults.insights.engagement_prediction
+        sentiment: analysisResults.insights.sentiment
       },
       mlAnalysis: {
         textAnalysis: analysisResults.text_analysis,
@@ -57,6 +55,7 @@ const ResultsPage = () => {
       }
     };
 
+    console.log('Transformed results:', transformedResults);
     setResults(transformedResults);
   }, [navigate]);
 
@@ -162,35 +161,40 @@ const ResultsPage = () => {
             <TrendingUp size={24} />
             Content Insights
           </h3>
-          <div className="insights-grid">
-            <div className="insight-card">
+          <div className="insights-grid-two">
+            <div className="insight-card-large">
               <span className="insight-label">Sentiment</span>
-              <span className="insight-value">{results.insights.sentiment}</span>
+              <span className="insight-value">{results.insights?.sentiment || 'POSITIVE'}</span>
             </div>
-            <div className="insight-card">
-              <span className="insight-label">Best Time to Post</span>
-              <span className="insight-value">{results.insights.bestTimeToPost}</span>
-            </div>
-            <div className="insight-card">
-              <span className="insight-label">Engagement</span>
-              <span className="insight-value">{results.insights.engagementPrediction}</span>
+            <div className="insight-card-large">
+              <span className="insight-label">Best Time to Post on Instagram</span>
+              <div className="schedule-table">
+                {results.bestTimeSchedule ? Object.entries(results.bestTimeSchedule).map(([day, time]) => (
+                  <div key={day} className="schedule-row">
+                    <span className="schedule-day">{day}</span>
+                    <span className="schedule-time">{time}</span>
+                  </div>
+                )) : (
+                  <div className="no-schedule">Loading schedule...</div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Platform Captions */}
         <div className="captions-section">
-          <h3>Platform-Specific Captions</h3>
+          <h3>
+            {results.platform === 'instagram' && <><Instagram size={24} /> Instagram Captions</>}
+            {results.platform === 'facebook' && <><Facebook size={24} /> Facebook Captions</>}
+            {results.platform === 'linkedin' && <><Linkedin size={24} /> LinkedIn Captions</>}
+            {results.platform === 'twitter' && <>🐦 Twitter Captions</>}
+          </h3>
           
-          {/* Instagram */}
-          <div className="platform-block instagram slide-in" style={{ animationDelay: '0.1s' }}>
-            <div className="platform-header">
-              <Instagram size={32} />
-              <h4>Instagram</h4>
-            </div>
+          <div className="platform-block slide-in">
             <div className="captions-list">
-              {results.captions.instagram.map((caption, index) => (
-                <div key={`ig-${index}`} className="caption-card pop-in" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
+              {results.captions && results.captions.length > 0 ? results.captions.map((caption, index) => (
+                <div key={`caption-${index}`} className="caption-card pop-in" style={{ animationDelay: `${0.2 + index * 0.1}s` }}>
                   <div className="caption-content">
                     <p className="caption-text">{caption}</p>
                     <div className="hashtag-section">
@@ -199,11 +203,11 @@ const ResultsPage = () => {
                         <span>Suggested Hashtags:</span>
                       </div>
                       <div className="hashtag-pills">
-                        {results.hashtags.instagram[index].map((tag, tagIndex) => (
+                        {results.hashtags && results.hashtags[index] && results.hashtags[index].map((tag, tagIndex) => (
                           <button
-                            key={`ig-tag-${index}-${tagIndex}`}
-                            className={`hashtag-pill ${selectedHashtags.instagram.includes(tag) ? 'selected' : ''}`}
-                            onClick={() => handleHashtagToggle('instagram', tag)}
+                            key={`tag-${index}-${tagIndex}`}
+                            className={`hashtag-pill ${selectedHashtags[results.platform]?.includes(tag) ? 'selected' : ''}`}
+                            onClick={() => handleHashtagToggle(results.platform, tag)}
                           >
                             {tag}
                           </button>
@@ -212,10 +216,10 @@ const ResultsPage = () => {
                     </div>
                   </div>
                   <button 
-                    className="copy-btn instagram-btn"
-                    onClick={() => copyWithHashtags(caption, 'instagram', index)}
+                    className="copy-btn"
+                    onClick={() => copyWithHashtags(caption, results.platform, index)}
                   >
-                    {copiedId === `instagram-${index}` ? (
+                    {copiedId === `${results.platform}-${index}` ? (
                       <>
                         <Check size={16} />
                         Copied!
@@ -228,107 +232,11 @@ const ResultsPage = () => {
                     )}
                   </button>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Facebook */}
-          <div className="platform-block facebook slide-in" style={{ animationDelay: '0.4s' }}>
-            <div className="platform-header">
-              <Facebook size={32} />
-              <h4>Facebook</h4>
-            </div>
-            <div className="captions-list">
-              {results.captions.facebook.map((caption, index) => (
-                <div key={`fb-${index}`} className="caption-card pop-in" style={{ animationDelay: `${0.5 + index * 0.1}s` }}>
-                  <div className="caption-content">
-                    <p className="caption-text">{caption}</p>
-                    <div className="hashtag-section">
-                      <div className="hashtag-label">
-                        <Hash size={16} />
-                        <span>Suggested Hashtags:</span>
-                      </div>
-                      <div className="hashtag-pills">
-                        {results.hashtags.facebook[index].map((tag, tagIndex) => (
-                          <button
-                            key={`fb-tag-${index}-${tagIndex}`}
-                            className={`hashtag-pill ${selectedHashtags.facebook.includes(tag) ? 'selected' : ''}`}
-                            onClick={() => handleHashtagToggle('facebook', tag)}
-                          >
-                            {tag}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <button 
-                    className="copy-btn facebook-btn"
-                    onClick={() => copyWithHashtags(caption, 'facebook', index)}
-                  >
-                    {copiedId === `facebook-${index}` ? (
-                      <>
-                        <Check size={16} />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={16} />
-                        Copy
-                      </>
-                    )}
-                  </button>
+              )) : (
+                <div className="no-captions-message">
+                  <p>No captions available</p>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* LinkedIn */}
-          <div className="platform-block linkedin slide-in" style={{ animationDelay: '0.7s' }}>
-            <div className="platform-header">
-              <Linkedin size={32} />
-              <h4>LinkedIn</h4>
-            </div>
-            <div className="captions-list">
-              {results.captions.linkedin.map((caption, index) => (
-                <div key={`li-${index}`} className="caption-card pop-in" style={{ animationDelay: `${0.8 + index * 0.1}s` }}>
-                  <div className="caption-content">
-                    <p className="caption-text">{caption}</p>
-                    <div className="hashtag-section">
-                      <div className="hashtag-label">
-                        <Hash size={16} />
-                        <span>Suggested Hashtags:</span>
-                      </div>
-                      <div className="hashtag-pills">
-                        {results.hashtags.linkedin[index].map((tag, tagIndex) => (
-                          <button
-                            key={`li-tag-${index}-${tagIndex}`}
-                            className={`hashtag-pill ${selectedHashtags.linkedin.includes(tag) ? 'selected' : ''}`}
-                            onClick={() => handleHashtagToggle('linkedin', tag)}
-                          >
-                            {tag}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <button 
-                    className="copy-btn linkedin-btn"
-                    onClick={() => copyWithHashtags(caption, 'linkedin', index)}
-                  >
-                    {copiedId === `linkedin-${index}` ? (
-                      <>
-                        <Check size={16} />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={16} />
-                        Copy
-                      </>
-                    )}
-                  </button>
-                </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

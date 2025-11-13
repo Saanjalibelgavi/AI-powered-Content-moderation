@@ -32,9 +32,10 @@ const imageToBase64 = (image) => {
  * Analyze text and image content using Hugging Face Transformers + OpenCV
  * @param {string} text - Text content to analyze
  * @param {File|string} image - Image file or base64 string
+ * @param {string} platform - Platform selection (instagram, facebook, linkedin, twitter)
  * @returns {Promise} - Analysis results with captions and moderation
  */
-export const analyzeContent = async (text, image) => {
+export const analyzeContent = async (text, image, platform = 'instagram') => {
   try {
     // Convert image to base64 if it's a File
     let imageBase64 = '';
@@ -45,6 +46,7 @@ export const analyzeContent = async (text, image) => {
     const response = await apiClient.post('/analyze', {
       text: text || '',
       image: imageBase64,
+      platform: platform || 'instagram',
     });
 
     return response.data;
