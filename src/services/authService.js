@@ -11,10 +11,13 @@ const authService = {
    */
   async signup(email, password) {
     try {
+      console.log('🔵 Signup attempt:', { email, apiUrl: `${API_URL}/auth/signup` });
       const response = await axios.post(`${API_URL}/auth/signup`, {
         email,
         password
       });
+      
+      console.log('✅ Signup successful:', response.data);
       
       // Store user data in sessionStorage
       if (response.data.user) {
@@ -23,7 +26,8 @@ const authService = {
       
       return response.data;
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error('❌ Signup error:', error);
+      console.error('Error response:', error.response?.data);
       throw error.response?.data || { error: 'Signup failed' };
     }
   },
@@ -33,10 +37,13 @@ const authService = {
    */
   async login(email, password) {
     try {
+      console.log('🔵 Login attempt:', { email, apiUrl: `${API_URL}/auth/login` });
       const response = await axios.post(`${API_URL}/auth/login`, {
         email,
         password
       });
+      
+      console.log('✅ Login successful:', response.data);
       
       // Store user data in sessionStorage
       if (response.data.user) {
@@ -45,7 +52,9 @@ const authService = {
       
       return response.data;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       throw error.response?.data || { error: 'Login failed' };
     }
   },

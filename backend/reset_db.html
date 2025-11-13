@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Management</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        button {
+            padding: 12px 30px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        .btn-info {
+            background: #3498db;
+            color: white;
+        }
+        .btn-info:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #2ecc71;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        #usersList {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .user-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffeaa7;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Database Management</h1>
+        
+        <div class="warning">
+            ⚠️ <strong>Important:</strong> This is for development use only. These actions cannot be undone!
+        </div>
+
+        <div class="section">
+            <h2>📊 View Current Users</h2>
+            <p>See all registered users in the database</p>
+            <button class="btn-info" onclick="getUsers()">View All Users</button>
+            <div id="usersList"></div>
+        </div>
+
+        <div class="section">
+            <h2>🗑️ Reset Database</h2>
+            <p>Delete all users from the database. You'll need to sign up again.</p>
+            <button class="btn-danger" onclick="resetDatabase()">Reset Database</button>
+        </div>
+
+        <div class="section">
+            <h2>ℹ️ Current Issue</h2>
+            <p>Your email <code>saanjalibelgavi@gmail.com</code> is already registered in the database.</p>
+            <p><strong>Solutions:</strong></p>
+            <ul>
+                <li>Option 1: <a href="http://localhost:3000/login">Go to Login Page</a> and use your existing account</li>
+                <li>Option 2: Click "Reset Database" above to clear all users and start fresh</li>
+            </ul>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        async function getUsers() {
+            try {
+                const response = await fetch(`${API_URL}/auth/users`);
+                const data = await response.json();
+                
+                const usersList = document.getElementById('usersList');
+                if (data.users && data.users.length > 0) {
+                    usersList.innerHTML = `
+                        <h3>Total Users: ${data.count}</h3>
+                        ${data.users.map(user => `
+                            <div class="user-item">
+                                <strong>Email:</strong> ${user.email}<br>
+                                <small>Created: ${new Date(user.created_at).toLocaleString()}</small>
+                            </div>
+                        `).join('')}
+                    `;
+                } else {
+                    usersList.innerHTML = '<p>No users in database</p>';
+                }
+                
+                showResult('Users loaded successfully!', 'info');
+            } catch (error) {
+                showResult('Error loading users: ' + error.message, 'error');
+            }
+        }
+
+        async function resetDatabase() {
+            if (!confirm('⚠️ Are you sure? This will delete ALL users from the database!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/auth/reset-db`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('✅ Database reset successful! All users deleted. You can now sign up again.', 'success');
+                    document.getElementById('usersList').innerHTML = '<p>Database is now empty</p>';
+                } else {
+                    showResult('Error: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showResult('Error resetting database: ' + error.message, 'error');
+            }
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = type;
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Load users on page load
+        window.onload = getUsers;
+    </script>
+</body>
+</html>

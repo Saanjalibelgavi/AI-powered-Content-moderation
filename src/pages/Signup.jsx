@@ -155,6 +155,13 @@ const Signup = () => {
             {error && (
               <div className="error-message">
                 {error}
+                {error.includes('already registered') && (
+                  <div style={{ marginTop: '10px' }}>
+                    <Link to="/login" className="auth-link">
+                      Click here to login instead
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 
